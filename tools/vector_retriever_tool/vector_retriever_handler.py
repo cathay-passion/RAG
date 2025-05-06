@@ -13,9 +13,7 @@ def warn() -> None:
 class VectorRetrieverTools(Toolkit):
     def __init__(self):
         super().__init__(name="vector_retriever_tools")
-        self.engine = create_engine(
-            f'postgresql+psycopg2://{os.getenv("POSTGRE_USERNAME")}:{os.getenv("POSTGRE_PASSWORD")}@localhost/agno_knowledge'
-        )
+        self.engine = create_engine(f'{os.getenv("DATABASE_URL_SYNC")}')
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  
         self.register(self.retrieve_similar_content)
         
@@ -35,10 +33,10 @@ class VectorRetrieverTools(Toolkit):
         with self.engine.connect() as conn:
             result = conn.execute(
                 text("""
-                    SELECT chunk_text, 
-                        1 - (embedding <=> CAST(:query_embedding AS vector)) AS cosine_similarity
-                    FROM chunks
-                    WHERE (1 - (embedding <=> CAST(:query_embedding AS vector))) >= :threshold
+                    SELECT original_text, 
+                        1 - (embedded_original_text <=> CAST(:query_embedding AS vector)) AS cosine_similarity
+                    FROM embedded_chunks
+                    WHERE (1 - (embedded_original_text <=> CAST(:query_embedding AS vector))) >= :threshold
                     ORDER BY cosine_similarity DESC
                     LIMIT :top_k
                 """),

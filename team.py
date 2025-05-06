@@ -1,22 +1,16 @@
 from textwrap import dedent
 from teams import V2MTeam
-from agents import WebAgent, YfinanceAgent, FileAgent, GraphRetrieverAgent, VectorRetrieverAgent
+from agents import VectorRetrieverAgent
 from datetime import datetime
 
 from agno.utils.log import logger
 from agno.models.openai import OpenAIChat
 from agno.playground import Playground, serve_playground_app
-
-
-web_agent = WebAgent()
-yfinance_agent=YfinanceAgent()
-file_agent = FileAgent()
-graph_retriever_agent = GraphRetrieverAgent()
 vector_retriever_agent = VectorRetrieverAgent()
 
 def initv2m():
     return V2MTeam(
-    team=[file_agent.agent, web_agent.agent, graph_retriever_agent.agent],
+    team=[vector_retriever_agent.agent],
     instructions = [
     "Today's date is " + datetime.now().strftime("%Y-%m-%d"),
     "You are a Leader of other sub-agent(s), responsible for understanding the user’s request in detail and determining which Agent(s) are needed based on the request’s nature and complexity.",
@@ -33,7 +27,7 @@ def initv2m():
     )
 v2m_team = initv2m()
 
-app = Playground(agents=[graph_retriever_agent.agent, vector_retriever_agent.agent , yfinance_agent.agent, web_agent.agent, v2m_team.team]).get_app()
+app = Playground(agents=[vector_retriever_agent.agent, v2m_team.team]).get_app()
 
 
 
